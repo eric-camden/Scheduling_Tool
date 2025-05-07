@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Scheduler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Staff Scheduler</h1>
+  <button id="dark-mode-toggle">🌙 Dark Mode</button>
+  
+  <h2>Heatmap</h2>
+  <table id="staffing-grid">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <!-- Dynamic column headers for time intervals will be added here -->
+      </tr>
+    </thead>
+    <tbody id="grid-body">
+      <!-- Heatmap rows for each day of the week will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <h2>Staff Table</h2><button id="save-staff">Save Staff</button>
+  <table id="staff-input-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Start Time</th>
+        <th>Hours</th>
+        <th>Lunch</th>
+        <th>End Time</th>
+        <th>Monday</th>
+        <th>Tuesday</th>
+        <th>Wednesday</th>
+        <th>Thursday</th>
+        <th>Friday</th>
+        <th>Saturday</th>
+        <th>Sunday</th>
+      </tr>
+    </thead>
+    <tbody id="staff-table-body">
+      <!-- Rows will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <h2>Daily Schedules</h2>
+  <div id="daily-schedules"></div> 
+
+  <script src="script.js"></script>
+</body>
+</html>
