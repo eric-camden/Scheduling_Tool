@@ -46,7 +46,7 @@
   /* Table Headers */
   th, td {
     border: 1px solid #ccc;
-    padding: 8px;
+    padding: 5px;
     text-align: center;
   }
   
@@ -81,7 +81,7 @@
   }
   
   .dark-mode td {
-    background-color: #2a2a2a; /* Slightly lighter shade for better contrast */
+    /* background-color: #2a2a2a; /* Slightly lighter shade for better contrast */
     color: #e0e0e0;
   }
   
@@ -113,16 +113,16 @@
 
 .schedule-table th, .schedule-table td {
     border: 1px solid #ccc;
-    padding: 5px;
+    padding: 3px;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.60rem;
 }
 
-/* Dark header row */
+/* Dark header row 
 .schedule-table th {
     background-color: #272727;
     color: white;
-}
+}*/
 
 /* Cells with value 1: green background, white text */
 .time-slot[data-status="1"] {
@@ -146,7 +146,7 @@
 /* Staff Table Compact Layout */
 #staff-input-table th,
 #staff-input-table td {
-  padding: 4px;
+  padding: 0px;
   font-size: 0.85rem;
 }
 
@@ -300,4 +300,22 @@ table, .glass-panel {
 .glass-panel {
   padding: 1rem;
   margin-bottom: 1.5rem;
+}
+
+/* Translucent styling for staff input table */
+#staff-input-table {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode #staff-input-table {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(3.3px);
+  -webkit-backdrop-filter: blur(3.3px);
+  border: 1px solid rgba(255, 255, 255, 0.74);  
 }
