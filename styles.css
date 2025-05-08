@@ -142,3 +142,162 @@
   }
   
   
+
+/* Staff Table Compact Layout */
+#staff-input-table th,
+#staff-input-table td {
+  padding: 4px;
+  font-size: 0.85rem;
+}
+
+/* Fixed widths for specific columns */
+#staff-input-table th:first-child,
+#staff-input-table td:first-child {
+  width: 200px; /* Name column */
+}
+
+#staff-input-table th:nth-child(2),
+#staff-input-table td:nth-child(2),  /* Start Time */
+#staff-input-table th:nth-child(3),
+#staff-input-table td:nth-child(3),  /* Hours */
+#staff-input-table th:nth-child(5),
+#staff-input-table td:nth-child(5)   /* End Time */
+{
+  width: 90px;
+  min-width: 90px;
+}
+
+/* Widen Start and End Time columns by ~25% */
+#staff-input-table th:nth-child(2),
+#staff-input-table td:nth-child(2),  /* Start Time */
+#staff-input-table th:nth-child(5),
+#staff-input-table td:nth-child(5)   /* End Time */
+{
+  width: 112px;
+  min-width: 112px;
+}
+
+/* Remove padding inside inputs for tighter appearance */
+#staff-input-table input[type="time"],
+#staff-input-table input[type="number"],
+#staff-input-table input[type="text"] {
+  padding: 2px;
+  margin: 0;
+}
+
+/* Toggle Switch Style */
+#toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#toggle-container label {
+  font-weight: bold;
+}
+
+#half-hour-toggle {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  -webkit-appearance: none;
+  background: #ccc;
+  outline: none;
+  border-radius: 50px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+#half-hour-toggle:checked {
+  background: #4CAF50;
+}
+
+#half-hour-toggle::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  background: white;
+  transition: 0.3s;
+}
+
+#half-hour-toggle:checked::before {
+  left: 28px;
+}
+
+.dark-mode #half-hour-toggle {
+  background: #555;
+}
+
+.dark-mode #half-hour-toggle:checked {
+  background: #4CAF50;
+}
+
+/* Hide zero values in daily schedule tables */
+.schedule-table .time-slot[data-status="0"] {
+  color: transparent;
+  background-color: inherit;
+  user-select: none;
+}
+
+/* Input Field Adjustments for Light/Dark Modes */
+input[type="text"],
+input[type="time"],
+input[type="number"] {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.dark-mode input[type="text"],
+.dark-mode input[type="time"],
+.dark-mode input[type="number"] {
+  background-color: #1f1f1f;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+/* Background images for light and dark mode */
+body {
+  background: url('LightBackground.png') no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+body.dark-mode {
+  background: url('DarkBackground.png') no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+
+/* Glassmorphism for tables and containers */
+table, .glass-panel {
+  background: rgba(19, 47, 78, 0.11);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5.2px);
+  -webkit-backdrop-filter: blur(5.2px);
+  border: 1px solid rgba(19, 47, 78, 0.8);
+}
+
+.dark-mode table, .dark-mode .glass-panel {
+  background: rgba(19, 47, 78, 0.11);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5.2px); 
+  -webkit-backdrop-filter: blur(5.2px);
+  border: 1px solid rgba(19, 47, 78, 0.8);
+}
+
+/* Padding and margin for better layout */
+.glass-panel {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
