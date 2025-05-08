@@ -197,28 +197,28 @@ let color;
 let fontColor = 'black'; // Default font color
 
 if (count === 0) {
-  color = `rgba(255, 0, 0, 1)`; // Red for 0
+  color = `rgba(255, 0, 0, 0.6)`; // Red for 0
 } else if (count === 1) {
-  color = `rgba(255, 69, 0, 1)`; // Orange-Red
+  color = `rgba(255, 69, 0, 0.6)`; // Orange-Red
 } else if (count === 2) {
-  color = `rgba(255, 140, 0, 1)`; // Dark Orange
+  color = `rgba(255, 140, 0, 0.6)`; // Dark Orange
 } else if (count === 3) {
-  color = `rgba(255, 200, 0, 1)`; // Yellow-Orange
+  color = `rgba(255, 200, 0, 0.6)`; // Yellow-Orange
 } else if (count === 4) {
-  color = `rgba(255, 255, 0, 1)`; // Yellow
+  color = `rgba(255, 255, 0, 0.6)`; // Yellow
 } else if (count === 5) {
-  color = `rgba(173, 255, 47, 1)`; // Yellow-Green
+  color = `rgba(173, 255, 47, 0.6)`; // Yellow-Green
 } else if (count === 6) {
-  color = `rgba(0, 255, 0, 1)`; // Green
+  color = `rgba(0, 255, 0, 0.6)`; // Green
 } else if (count === 7) {
-  color = `rgba(0, 200, 150, 1)`; // Green-Blue
+  color = `rgba(0, 200, 150, 0.6)`; // Green-Blue
 } else if (count === 8) {
-  color = `rgba(0, 150, 200, 1)`; // Cyan
+  color = `rgba(0, 150, 200, 0.6)`; // Cyan
 } else if (count === 9) {
-  color = `rgba(0, 100, 255, 1)`; // Light Blue
+  color = `rgba(0, 100, 255, 0.6)`; // Light Blue
   fontColor = 'darkgrey'; // Change font color for 9+
 } else if (count >= 10) {
-  color = `rgba(0, 0, 255, 1)`; // Blue for 10+
+  color = `rgba(0, 0, 255, 0.6)`; // Blue for 10+
   fontColor = 'darkgrey'; // Change font color for 10+
 }
 
