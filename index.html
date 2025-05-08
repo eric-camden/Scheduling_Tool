@@ -1,29 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Staff Scheduler</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    #button-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .left-buttons, .right-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    #toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
   <h1>Staff Scheduler</h1>
-  <button id="dark-mode-toggle">🌙 Dark Mode</button>
-  
-  <h2>Heatmap</h2>
+<div id="toggle-container" style="margin-top: 10px;">
+  <label for="half-hour-toggle"><strong>Show half-hour data</strong></label>
+  <input type="checkbox" id="half-hour-toggle" />
+</div>
+
+<p><a href="#daily-schedules">📅 Jump to Daily Schedules</a></p>
+
+<h2>Heatmap</h2>
+
+
   <table id="staffing-grid">
     <thead>
       <tr>
         <th>Day</th>
-        <!-- Dynamic column headers for time intervals will be added here -->
+        <!-- Time interval headers will be injected here -->
       </tr>
     </thead>
     <tbody id="grid-body">
-      <!-- Heatmap rows for each day of the week will be dynamically added here -->
+      <!-- Day rows with heatmap data will be generated here -->
     </tbody>
   </table>
+  <details id="instructions" open style="margin-top: 20px;">
+    <summary><strong>📘 How to Use the Staff Scheduler</strong> <label style="margin-left: 1em; font-weight: normal;"><input type="checkbox" id="show-on-load" checked> Show when page loads</label></summary>
+    <div style="margin-top: 10px;">
+      <p><strong>Step 1:</strong> Enter staff names, start time, hours worked, and select the days they work. The end time will be calculated automatically.</p>
+      <p><strong>Step 2:</strong> Click <strong>Update Heatmap</strong> to generate the Heatmap and Daily Schedules.</p>
+      <p><strong>Step 3:</strong> Use the <strong>Show half-hour data</strong> toggle to refine time resolution in the schedule tables.</p>
+      <p><strong>Step 4:</strong> You can <strong>Import</strong> or <strong>Export</strong> data as CSV, <strong>Clear</strong> the staff list, or load <strong>Sample Data</strong> for demo purposes.</p>
+      <p>Your entries are saved locally in your browser and will be restored on your next visit.</p>
+      <p style="margin-top: 1em; font-style: italic; color: #555;">We've pre-loaded example data on your first visit to help you explore the tool quickly. You can clear or replace it anytime.</p>
+    </div>
+  </details>
 
-  <h2>Staff Table</h2><button id="save-staff">Save Staff</button>
+  <button id="dark-mode-toggle">🌙 Dark Mode</button>
+
+  <h2>Staff Table</h2>
+  <div id="button-bar">
+    <div class="left-buttons">
+      <button id="save-staff">Update Heatmap</button>
+      <button id="clear-staff">Clear Staff</button>
+    </div>
+    <div class="right-buttons">
+      <button id="load-test">Load Test Data</button>
+      <button id="import-csv">Import from CSV</button>
+      <button id="export-csv">Export to CSV</button>
+    </div>
+  </div>
+
   <table id="staff-input-table">
     <thead>
       <tr>
@@ -46,8 +98,12 @@
     </tbody>
   </table>
 
+  
+
+  
+
   <h2>Daily Schedules</h2>
-  <div id="daily-schedules"></div> 
+  <div id="daily-schedules"></div>
 
   <script src="script.js"></script>
 </body>
