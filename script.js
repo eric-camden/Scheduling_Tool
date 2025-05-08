@@ -336,6 +336,7 @@ function importFromCSV(event) {
     });
 
     localStorage.setItem("staffData", JSON.stringify(staffData));
+    updateOutTimes();
     forceEndTimeRecalc();
     //populateStaffTable();
     generateHeatmap();
@@ -688,6 +689,7 @@ function buildStaffTable() {
     });
 
     localStorage.setItem("staffData", JSON.stringify(staffData));
+    updateOutTimes();
     forceEndTimeRecalc();
     generateHeatmap();
     generateDailyGrids();
@@ -747,4 +749,13 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("showInstructions", showToggle.checked ? "true" : "false");
     });
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const refreshBtn = document.getElementById("refresh-end-times");
+  refreshBtn?.addEventListener("click", () => {
+    updateOutTimes();
+  });
+
+  updateOutTimes();
 });
