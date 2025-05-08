@@ -2,7 +2,7 @@
 
 A JavaScript-based visual staff scheduling tool with built-in heatmap generation, daily shift tables, CSV import/export, and dark mode support. Ideal for teams, managers, or admins who need a clear, fast way to manage complex schedules.
 
-![screenshot](preview.png) <!-- Optional: Add a screenshot here -->
+![screenshot](preview.png) 
 
 ## ✨ Features
 
