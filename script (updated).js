@@ -6,67 +6,14 @@ function to12HourFormat(hour24, minute) {
   return `${hour12}:${minute.toString().padStart(2, '0')} ${period}`;
 }
 
-// Initial dynamic listener for new rows
-function attachRowListeners(row) {
-  ['input', 'change'].forEach(evt => {
-    row.querySelectorAll('input[type="time"], input[type="number"], input[type="checkbox"]').forEach(input => {
-      input.addEventListener(evt, updateOutTimes);
-    });
-  });
-}
-// Render the input table based on staffData
-function renderStaffTable() {
-  const tbody = document.querySelector('#staff-input-table tbody');
-  tbody.innerHTML = '';
-  for (let i = 0; i < 30; i++) {
-    const data = staffData[i] || { name:'', startTime:'', hoursWorked:'', hasLunch:false, outTime:'', days:[] };
-    const row = document.createElement('tr');
-    ['text','time','number','checkbox','text'].forEach((type, idx) => {
-      const cell = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.type = type;
-      if (type === 'checkbox') inp.checked = data.hasLunch;
-      else if (idx===0) inp.placeholder = `Staff ${i+1}`;
-      inp.value = type==='checkbox'?undefined:data[['name','startTime','hoursWorked','outTime'][idx]];
-      if (type==='text' && idx===4) inp.readOnly = true;
-      cell.appendChild(inp);
-      row.appendChild(cell);
-    });
-    daysOfWeek.forEach(d => {
-      const cell = document.createElement('td');
-      const chk = document.createElement('input');
-      chk.type = 'checkbox';
-      chk.checked = data.days.includes(d);
-      cell.appendChild(chk);
-      row.appendChild(cell);
-    });
-    attachRowListeners(row);
-    tbody.appendChild(row);
-  }
-  updateOutTimes();
-}
-/*  Disabled to test new function below
+
 function getTimeSlots() {
   const showHalfHours = document.getElementById("half-hour-toggle")?.checked;
   return Array.from({ length: 48 }, (_, i) =>
     `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 === 0 ? "00" : "30"}`
   ).filter(slot => showHalfHours || slot.endsWith(":00"));
 }
-*/
 
-// Generate time slots (half-hour optional)
-function getTimeSlots() {
-  const showHalfHours = document.getElementById('half-hour-toggle')?.checked;
-  return Array.from({ length: 48 }, (_, i) => {
-    const hh = String(Math.floor(i / 2)).padStart(2, '0');
-    const mm = i % 2 === 0 ? '00' : '30';
-    return `${hh}:${mm}`;
-  }).filter(slot => showHalfHours || slot.endsWith(':00'));
-}
-
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
-// 1 of 12
 document.addEventListener('DOMContentLoaded', () => {
   const darkModeToggle = document.getElementById('dark-mode-toggle');
 
@@ -88,7 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// 2 of 12
+// Load saved staff data or initialize an empty array
+const staffData = JSON.parse(localStorage.getItem('staffData')) || [];
+const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 document.addEventListener('DOMContentLoaded', () => {
   const staffTableBody = document.querySelector('#staff-input-table tbody');
   const saveButton = document.getElementById('save-staff');
@@ -204,8 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     generateDailyGrids();
   });
 });
-*/
-
 
 // Generate the heatmap table
 function generateHeatmap() {
@@ -319,9 +267,6 @@ function isCarryoverShift(startTime, hoursWorked, hasLunch, hour, dayIndex) {
 
   return end > 1440 && check < (end - 1440); // Check if time falls after midnight on the next day
 }
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
-// 3 of 12
 document.addEventListener('DOMContentLoaded', () => {
   const staffTableBody = document.querySelector('#staff-input-table tbody');
   const saveButton = document.getElementById('save-staff');
@@ -349,10 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
   generateHeatmap();
   generateDailyGrids(); 
 });
-*/
 
-
-/*  Hiding for testing new function below
 // Export data to CSV
 function exportToCSV() {
   let csvContent = "Name,Start Time,Hours,Lunch,End Time," + daysOfWeek.join(",") + "\n";
@@ -377,30 +319,7 @@ function exportToCSV() {
   a.click();
   document.body.removeChild(a);
 }
-*/
 
-// CSV Export
-function exportToCSV() {
-  const header = ['Name','Start Time','Hours','Lunch','End Time', ...daysOfWeek].join(',');
-  const csv = [header, ...staffData.map(s => [
-    s.name,
-    s.startTime,
-    s.hoursWorked,
-    s.hasLunch ? 'Yes' : 'No',
-    s.endTime,
-    ...daysOfWeek.map(d => s.days.includes(d) ? 'Yes' : 'No')
-  ].join(','))].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'staff_schedule.csv';
-  a.click();
-}
-
-
-
-
-// CSV Import
 function importFromCSV(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -408,22 +327,36 @@ function importFromCSV(event) {
   const reader = new FileReader();
   reader.onload = function (e) {
     const csvRows = e.target.result.trim().split("\n").map(row => row.split(","));
-    if (csvRows.length < 2) return; // Ensure valid CSV format
+    if (csvRows.length < 2) return;
 
     staffData.length = 0;
     csvRows.slice(1).forEach(row => {
-      if (row.length >= 12) { // Ensure all expected fields are present
+      if (row.length >= 12) {
+        const { display, raw } = calculateEndTime(row[1].trim(), parseInt(row[2], 10), row[3].trim() === "Yes");
         const staffEntry = {
           name: row[0].trim(),
           startTime: row[1].trim(),
           hoursWorked: parseInt(row[2], 10),
           hasLunch: row[3].trim() === "Yes",
-          endTime: calculateEndTime(row[1].trim(), parseInt(row[2], 10), row[3].trim() === "Yes"),
+          endTime: raw,
+          outTime: display,
           days: daysOfWeek.filter((day, index) => row[5 + index]?.trim() === "Yes")
         };
         staffData.push(staffEntry);
       }
     });
+
+    localStorage.setItem("staffData", JSON.stringify(staffData));
+    updateOutTimes();
+    forceEndTimeRecalc();
+    generateHeatmap();
+    generateDailyGrids();
+    alert("Staff schedule imported successfully!");
+    window.location.reload();
+  };
+
+  reader.readAsText(file);
+}
 
     localStorage.setItem("staffData", JSON.stringify(staffData));
     updateOutTimes();
@@ -439,7 +372,6 @@ function importFromCSV(event) {
 
   reader.readAsText(file);
 }
-
 
 function generateDailyGrids() {
   const scheduleContainer = document.getElementById("daily-schedules");
@@ -538,9 +470,6 @@ function generateDailyGrids() {
   });
 }
 
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
-// 4 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const loadTestBtn = document.getElementById("load-test");
   if (loadTestBtn) {
@@ -592,7 +521,6 @@ Peter von Nostrand,06:00,12,No,19:00,Yes,No,No,No,No,Yes,Yes`;
   }
 });
 
-// 5 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const instructions = document.getElementById("instructions");
   if (instructions && instructions.open && !localStorage.getItem("hasVisited")) {
@@ -602,7 +530,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 6 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const instructions = document.getElementById("instructions");
   if (instructions && instructions.open) {
@@ -612,7 +539,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 7 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const instructions = document.getElementById("instructions");
   if (instructions) {
@@ -623,7 +549,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 8 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const tbody = document.getElementById("staff-table-body");
   const rows = Array.from(tbody?.querySelectorAll("tr") || []);
@@ -638,7 +563,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 9 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.getElementById("half-hour-toggle");
   if (toggle) {
@@ -653,7 +577,6 @@ document.addEventListener("DOMContentLoaded", () => {
   generateDailyGrids();
 });
 
-// 10 of 12
 document.addEventListener("DOMContentLoaded", () => {
   // Clear Staff
   const clearBtn = document.getElementById("clear-staff");
@@ -686,10 +609,8 @@ document.addEventListener("DOMContentLoaded", () => {
   fileInput.addEventListener("change", importFromCSV);
 });
 updateOutTimes();
-*/
 
-
-/* hiding to test new function below...
+// Update out times
 function updateOutTimes() {
   const rows = document.querySelectorAll("#staff-input-table tbody tr");
   rows.forEach(row => {
@@ -708,27 +629,10 @@ function updateOutTimes() {
         let end = h * 60 + m + duration;
         const hourEnd = Math.floor(end / 60) % 24;
         const minEnd = end % 60;
-        outTimeDisplay.value = `${String(hourEnd).padStart(2, '0')}:${String(minEnd).padStart(2, '0')}`;
+        outTimeDisplay.value = to12HourFormat(hourEnd, minEnd);
       } else {
         outTimeDisplay.value = "";
       }
-    }
-  });
-}
-*/
-
-// Update all out-time displays in the table
-function updateOutTimes() {
-  document.querySelectorAll('#staff-input-table tbody tr').forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    const start = inputs[1].value;
-    const hours = parseInt(inputs[2].value, 10);
-    const lunch = inputs[3].checked;
-    const outDisplay = inputs[4];
-    if (start && !isNaN(hours)) {
-      outDisplay.value = calculateEndTime(start, hours, lunch).display;
-    } else {
-      outDisplay.value = '';
     }
   });
 }
@@ -836,44 +740,18 @@ function forceEndTimeRecalc() {
   });
 }
 
-/* To be removed
 function calculateEndTime(startTime, hoursWorked, hasLunch) {
   const [h, m] = startTime.split(":").map(Number);
   let duration = hoursWorked * 60 + (hasLunch ? 60 : 0);
   let end = h * 60 + m + duration;
   const hourEnd = Math.floor(end / 60) % 24;
   const minEnd = end % 60;
-  return `${String(hourEnd).padStart(2, '0')}:${String(minEnd).padStart(2, '0')}`;
-}
-*/
-
-/* hiding to test new function below...
-function calculateEndTime(startTime, hoursWorked, hasLunch) {
-  const [h, m] = startTime.split(":").map(Number);
-  let duration = hoursWorked * 60 + (hasLunch ? 60 : 0);
-  let end = h * 60 + m + duration;
-  const hourEnd = Math.floor(end / 60) % 24;
-  const minEnd = end % 60;
-  return `${String(hourEnd).padStart(2, '0')}:${String(minEnd).padStart(2, '0')}`;
-}
-*/
-
-// Calculate end time: returns both raw (24h) and display (12h) formats
-function calculateEndTime(startTime, hoursWorked, hasLunch) {
-  const [h, m] = startTime.split(':').map(Number);
-  const duration = hoursWorked * 60 + (hasLunch ? 60 : 0);
-  const endMinutes = h * 60 + m + duration;
-  const hourEnd = Math.floor(endMinutes / 60) % 24;
-  const minEnd = endMinutes % 60;
   return {
-    raw: `${String(hourEnd).padStart(2, '0')}:${String(minEnd).padStart(2, '0')}`,
-    display: to12HourFormat(hourEnd, minEnd)
+    display: to12HourFormat(hourEnd, minEnd),
+    raw: `${String(hourEnd).padStart(2, '0')}:${String(minEnd).padStart(2, '0')}`
   };
 }
 
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
-// 11 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const instructions = document.getElementById("instructions");
   const showToggle = document.getElementById("show-on-load");
@@ -891,7 +769,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// 12 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const refreshBtn = document.getElementById("refresh-end-times");
   refreshBtn?.addEventListener("click", () => {
@@ -899,182 +776,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   updateOutTimes();
-});
-*/
-
-
-
-// TEST FUNCTIONS:
-
-// Attach listeners to a row's inputs
-function attachRowListeners(row) {
-  row.querySelectorAll('input[type="time"], input[type="number"], input[type="checkbox"]').forEach(input => {
-    ['input','change'].forEach(evt => input.addEventListener(evt, updateOutTimes));
-  });
-}
-
-// Render the input table based on staffData
-function renderStaffTable() {
-  const tbody = document.querySelector('#staff-input-table tbody');
-  tbody.innerHTML = '';
-  for (let i = 0; i < 30; i++) {
-    const data = staffData[i] || { name:'', startTime:'', hoursWorked:'', hasLunch:false, outTime:'', days:[] };
-    const row = document.createElement('tr');
-    ['text','time','number','checkbox','text'].forEach((type, idx) => {
-      const cell = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.type = type;
-      if (type === 'checkbox') inp.checked = data.hasLunch;
-      else if (idx === 0) inp.placeholder = `Staff ${i+1}`;
-      inp.value = type==='checkbox'?undefined:data[['name','startTime','hoursWorked','outTime'][idx]];
-      if (type==='text' && idx===4) inp.readOnly = true;
-      cell.appendChild(inp);
-      row.appendChild(cell);
-    });
-    daysOfWeek.forEach(d => {
-      const cell = document.createElement('td');
-      const chk = document.createElement('input');
-      chk.type = 'checkbox';
-      chk.checked = data.days.includes(d);
-      cell.appendChild(chk);
-      row.appendChild(cell);
-    });
-    attachRowListeners(row);
-    tbody.appendChild(row);
-  }
-  updateOutTimes();
-}
-
-// CSV Import
-function importFromCSV(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = e.target.result.trim().split('\n').map(r => r.split(','));
-    staffData.length = 0;
-    rows.slice(1).forEach(cells => {
-      if (cells.length >= 12) {
-        const [name,start,hours,lunch,,...weekday] = cells;
-        const hw = parseInt(hours,10);
-        const hasLunch = lunch.trim()==='Yes';
-        const {raw,display} = calculateEndTime(start.trim(),hw,hasLunch);
-        staffData.push({name:name.trim(),startTime:start.trim(),hoursWorked:hw,hasLunch,endTime:raw,outTime:display,days:daysOfWeek.filter((_,i)=>weekday[i]?.trim()==='Yes')});
-      }
-    });
-    localStorage.setItem('staffData',JSON.stringify(staffData));
-    renderStaffTable(); generateHeatmap(); generateDailyGrids(); updateOutTimes();
-    alert('Imported successfully');
-  };
-  reader.readAsText(file);
-}
-
-// CSV Export
-function exportToCSV() {
-  const header = ['Name','Start Time','Hours','Lunch','End Time',...daysOfWeek].join(',');
-  const csv = [header,...staffData.map(s=>[s.name,s.startTime,s.hoursWorked,s.hasLunch?'Yes':'No',s.endTime,...daysOfWeek.map(d=>s.days.includes(d)?'Yes':'No')].join(','))].join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='staff_schedule.csv'; a.click();
-}
-
-
-
-
-// Heatmap & Daily grid generation remain unchanged
-
-// ─── On load initialization ───────────────────────────────────────
-const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-let staffData  = JSON.parse(localStorage.getItem('staffData')) || [];
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Create shared fileInput for import & test data
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.csv';
-  fileInput.style.display = 'none';
-  document.body.appendChild(fileInput);
-  fileInput.addEventListener('change', importFromCSV);
-
-  // 1) Dark mode toggle
-  const darkToggle = document.getElementById('dark-mode-toggle');
-  if (localStorage.getItem('darkMode') === 'enabled') document.body.classList.add('dark-mode');
-  darkToggle.addEventListener('click', () => {
-    const enabled = document.body.classList.toggle('dark-mode');
-    localStorage.setItem('darkMode', enabled ? 'enabled' : 'disabled');
-  });
-
-  // 2) Instructions panel toggle
-  const instr = document.getElementById('instructions');
-  const showToggle = document.getElementById('show-on-load');
-  if (instr && showToggle) {
-    const pref = localStorage.getItem('showInstructions');
-    instr.open = pref !== 'false';
-    showToggle.checked = pref !== 'false';
-    showToggle.addEventListener('change', () => {
-      localStorage.setItem('showInstructions', showToggle.checked ? 'true' : 'false');
-    });
-  }
-
-  // 3) Half-hour heatmap toggle
-  document.getElementById('half-hour-toggle').addEventListener('change', () => {
-    generateHeatmap();
-    generateDailyGrids();
-  });
-
-  // 4) Clear staff data
-  document.getElementById('clear-staff').addEventListener('click', () => {
-    localStorage.removeItem('staffData');
-    alert('Staff data cleared.');
-    location.reload();
-  });
-
-  // 5) Load test data
-  const loadTestBtn = document.getElementById('load-test');
-  loadTestBtn?.addEventListener('click', () => {
-    const csv = `Name,Start Time,Hours,Lunch,End Time,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday
-Bob Sacamano,06:00,12,No,18:00,Yes,Yes,Yes,No,No,No,No
-Tim Whatley,18:00,12,No,06:00,No,Yes,Yes,Yes,No,No,No
-Lloyd Braun,18:00,12,No,06:00,No,No,Yes,Yes,Yes,No,No
-Jackie Chiles,06:00,12,No,18:00,Yes,Yes,No,No,No,No,Yes
-Izzy Mandelbaum,06:00,12,No,18:00,No,No,No,Yes,Yes,Yes,No
-Babu Bhatt,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Jean-Paul Jean-Paul,18:00,12,No,06:00,No,No,No,No,Yes,Yes,Yes
-Bob Cobb,18:00,12,No,06:00,No,No,No,No,No,Yes,No
-David Puddy,18:00,12,No,06:00,Yes,Yes,No,No,No,No,Yes
-Sue Ellen Mischke,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Frank Costanza,06:00,12,No,18:00,No,Yes,Yes,Yes,No,No,No
-Kenny Bania,18:00,12,No,06:00,No,No,Yes,Yes,Yes,No,No
-Mickey Abbott,18:00,12,No,06:00,No,No,No,Yes,Yes,Yes,No
-Joe Davola,06:00,12,No,18:00,No,No,No,No,No,No,No
-Sidra Holland,06:00,12,No,18:00,No,No,No,No,Yes,Yes,Yes
-Jacopo Peterman,06:00,12,No,18:00,Yes,No,No,No,No,Yes,Yes
-Yev Kassem,06:00,12,No,18:00,Yes,Yes,No,No,No,No,Yes
-Matt Wilhelm,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Justin Pitt,06:00,12,No,18:00,No,Yes,Yes,Yes,No,No,No
-Russell Dalrymple,06:00,12,No,18:00,No,No,Yes,Yes,Yes,No,No
-Jack Klompus,18:00,12,No,18:00,No,No,Yes,Yes,Yes,No,No
-Art Vandelay,18:00,12,No,06:00,No,No,No,No,Yes,Yes,Yes
-Peter von Nostrand,06:00,12,No,19:00,Yes,No,No,No,No,Yes,Yes`;
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const fakeFile = new File([blob], 'test_staff_data.csv', { type: 'text/csv' });
-    // Override fileInput.files to include our fake file
-    Object.defineProperty(fileInput, 'files', { value: [fakeFile] });
-    fileInput.dispatchEvent(new Event('change'));
-  });
-
-  // 6) CSV import/export & Save
-  document.getElementById('import-csv').addEventListener('click', () => fileInput.click());
-  document.getElementById('export-csv').addEventListener('click', exportToCSV);
-  document.getElementById('save-staff').addEventListener('click', () => {
-    staffData.length = 0;
-    renderStaffTable();
-    localStorage.setItem('staffData', JSON.stringify(staffData));
-    generateHeatmap();
-    generateDailyGrids();
-    alert('Saved!');
-  });
-
-  // 7) Initial render
-  renderStaffTable();
-  generateHeatmap();
-  generateDailyGrids();
 });

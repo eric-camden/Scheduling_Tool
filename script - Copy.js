@@ -64,8 +64,6 @@ function getTimeSlots() {
   }).filter(slot => showHalfHours || slot.endsWith(':00'));
 }
 
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
 // 1 of 12
 document.addEventListener('DOMContentLoaded', () => {
   const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -87,6 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+
+
+
 
 // 2 of 12
 document.addEventListener('DOMContentLoaded', () => {
@@ -204,8 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     generateDailyGrids();
   });
 });
-*/
-
 
 // Generate the heatmap table
 function generateHeatmap() {
@@ -320,7 +321,6 @@ function isCarryoverShift(startTime, hoursWorked, hasLunch, hour, dayIndex) {
   return end > 1440 && check < (end - 1440); // Check if time falls after midnight on the next day
 }
 
-/* hiding to test new DOMContentLoaded listener at the end of the script...
 // 3 of 12
 document.addEventListener('DOMContentLoaded', () => {
   const staffTableBody = document.querySelector('#staff-input-table tbody');
@@ -349,8 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
   generateHeatmap();
   generateDailyGrids(); 
 });
-*/
-
 
 /*  Hiding for testing new function below
 // Export data to CSV
@@ -538,8 +536,6 @@ function generateDailyGrids() {
   });
 }
 
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
 // 4 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const loadTestBtn = document.getElementById("load-test");
@@ -686,7 +682,6 @@ document.addEventListener("DOMContentLoaded", () => {
   fileInput.addEventListener("change", importFromCSV);
 });
 updateOutTimes();
-*/
 
 
 /* hiding to test new function below...
@@ -871,8 +866,6 @@ function calculateEndTime(startTime, hoursWorked, hasLunch) {
   };
 }
 
-
-/* hiding to test new DOMContentLoaded listener at the end of the script...
 // 11 of 12
 document.addEventListener("DOMContentLoaded", () => {
   const instructions = document.getElementById("instructions");
@@ -900,8 +893,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateOutTimes();
 });
-*/
-
 
 
 // TEST FUNCTIONS:
@@ -979,102 +970,57 @@ function exportToCSV() {
 
 
 
-// Heatmap & Daily grid generation remain unchanged
-
 // ─── On load initialization ───────────────────────────────────────
 const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-let staffData  = JSON.parse(localStorage.getItem('staffData')) || [];
+const staffData  = JSON.parse(localStorage.getItem('staffData')) || [];
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Create shared fileInput for import & test data
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.csv';
-  fileInput.style.display = 'none';
-  document.body.appendChild(fileInput);
-  fileInput.addEventListener('change', importFromCSV);
-
-  // 1) Dark mode toggle
+// Single consolidated DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded',()=>{
+  // Dark mode toggle
   const darkToggle = document.getElementById('dark-mode-toggle');
-  if (localStorage.getItem('darkMode') === 'enabled') document.body.classList.add('dark-mode');
-  darkToggle.addEventListener('click', () => {
-    const enabled = document.body.classList.toggle('dark-mode');
-    localStorage.setItem('darkMode', enabled ? 'enabled' : 'disabled');
+  if(localStorage.getItem('darkMode')==='enabled') document.body.classList.add('dark-mode');
+  darkToggle.addEventListener('click',()=>{
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')?'enabled':'disabled');
   });
 
-  // 2) Instructions panel toggle
+  // Instructions toggle behavior
   const instr = document.getElementById('instructions');
   const showToggle = document.getElementById('show-on-load');
-  if (instr && showToggle) {
+  if(instr && showToggle){
     const pref = localStorage.getItem('showInstructions');
-    instr.open = pref !== 'false';
-    showToggle.checked = pref !== 'false';
-    showToggle.addEventListener('change', () => {
-      localStorage.setItem('showInstructions', showToggle.checked ? 'true' : 'false');
-    });
+    instr.open = pref!=='false'; showToggle.checked = pref!=='false';
+    showToggle.addEventListener('change',()=>localStorage.setItem('showInstructions',showToggle.checked?'true':'false'));
   }
 
-  // 3) Half-hour heatmap toggle
-  document.getElementById('half-hour-toggle').addEventListener('change', () => {
-    generateHeatmap();
-    generateDailyGrids();
+  // Half-hour toggle
+  const halfToggle = document.getElementById('half-hour-toggle');
+  halfToggle.addEventListener('change',()=>{generateHeatmap();generateDailyGrids();});
+
+  // Clear staff
+  document.getElementById('clear-staff').addEventListener('click',()=>{localStorage.removeItem('staffData');alert('Cleared!');location.reload();});
+
+  // Load test data
+  document.getElementById('load-test')?.addEventListener('click',()=>{/* existing loadTest handler */});
+
+  // CSV buttons & Save
+  document.getElementById('export-csv').addEventListener('click',exportToCSV);
+  const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='.csv'; fileInput.style.display='none'; document.body.appendChild(fileInput);
+  document.getElementById('import-csv').addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',importFromCSV);
+  document.getElementById('save-staff').addEventListener('click',()=>{
+    staffData.length=0; renderStaffTable(); localStorage.setItem('staffData',JSON.stringify(staffData)); generateHeatmap(); generateDailyGrids(); alert('Saved!');
   });
 
-  // 4) Clear staff data
-  document.getElementById('clear-staff').addEventListener('click', () => {
-    localStorage.removeItem('staffData');
-    alert('Staff data cleared.');
-    location.reload();
-  });
-
-  // 5) Load test data
-  const loadTestBtn = document.getElementById('load-test');
-  loadTestBtn?.addEventListener('click', () => {
-    const csv = `Name,Start Time,Hours,Lunch,End Time,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday
-Bob Sacamano,06:00,12,No,18:00,Yes,Yes,Yes,No,No,No,No
-Tim Whatley,18:00,12,No,06:00,No,Yes,Yes,Yes,No,No,No
-Lloyd Braun,18:00,12,No,06:00,No,No,Yes,Yes,Yes,No,No
-Jackie Chiles,06:00,12,No,18:00,Yes,Yes,No,No,No,No,Yes
-Izzy Mandelbaum,06:00,12,No,18:00,No,No,No,Yes,Yes,Yes,No
-Babu Bhatt,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Jean-Paul Jean-Paul,18:00,12,No,06:00,No,No,No,No,Yes,Yes,Yes
-Bob Cobb,18:00,12,No,06:00,No,No,No,No,No,Yes,No
-David Puddy,18:00,12,No,06:00,Yes,Yes,No,No,No,No,Yes
-Sue Ellen Mischke,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Frank Costanza,06:00,12,No,18:00,No,Yes,Yes,Yes,No,No,No
-Kenny Bania,18:00,12,No,06:00,No,No,Yes,Yes,Yes,No,No
-Mickey Abbott,18:00,12,No,06:00,No,No,No,Yes,Yes,Yes,No
-Joe Davola,06:00,12,No,18:00,No,No,No,No,No,No,No
-Sidra Holland,06:00,12,No,18:00,No,No,No,No,Yes,Yes,Yes
-Jacopo Peterman,06:00,12,No,18:00,Yes,No,No,No,No,Yes,Yes
-Yev Kassem,06:00,12,No,18:00,Yes,Yes,No,No,No,No,Yes
-Matt Wilhelm,18:00,12,No,06:00,Yes,Yes,Yes,No,No,No,No
-Justin Pitt,06:00,12,No,18:00,No,Yes,Yes,Yes,No,No,No
-Russell Dalrymple,06:00,12,No,18:00,No,No,Yes,Yes,Yes,No,No
-Jack Klompus,18:00,12,No,18:00,No,No,Yes,Yes,Yes,No,No
-Art Vandelay,18:00,12,No,06:00,No,No,No,No,Yes,Yes,Yes
-Peter von Nostrand,06:00,12,No,19:00,Yes,No,No,No,No,Yes,Yes`;
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const fakeFile = new File([blob], 'test_staff_data.csv', { type: 'text/csv' });
-    // Override fileInput.files to include our fake file
-    Object.defineProperty(fileInput, 'files', { value: [fakeFile] });
-    fileInput.dispatchEvent(new Event('change'));
-  });
-
-  // 6) CSV import/export & Save
-  document.getElementById('import-csv').addEventListener('click', () => fileInput.click());
-  document.getElementById('export-csv').addEventListener('click', exportToCSV);
-  document.getElementById('save-staff').addEventListener('click', () => {
-    staffData.length = 0;
-    renderStaffTable();
-    localStorage.setItem('staffData', JSON.stringify(staffData));
-    generateHeatmap();
-    generateDailyGrids();
-    alert('Saved!');
-  });
-
-  // 7) Initial render
+  // Initial render
   renderStaffTable();
   generateHeatmap();
   generateDailyGrids();
 });
+
+
+
+
+
+
+
